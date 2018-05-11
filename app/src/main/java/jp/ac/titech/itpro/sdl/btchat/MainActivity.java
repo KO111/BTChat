@@ -88,9 +88,10 @@ public class MainActivity extends AppCompatActivity {
 
     private CommThread commThread;
 
-    private SoundPool soundPool;
-    private int sound_connected;
+    private static SoundPool soundPool;
+    private static int sound_connected;
     private int sound_disconnected;
+    private static final String SEND_TONE = "THIS_IS_TONE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem itemDisconnect = menu.findItem(R.id.menu_disconnect);
         MenuItem itemServerStart = menu.findItem(R.id.menu_server_start);
         MenuItem itemServerStop = menu.findItem(R.id.menu_server_stop);
+        MenuItem itemTone = menu.findItem(R.id.menu_tone);
         switch (state) {
         case Initializing:
         case Connecting:
@@ -192,18 +194,21 @@ public class MainActivity extends AppCompatActivity {
             itemDisconnect.setVisible(false);
             itemServerStart.setVisible(false);
             itemServerStop.setVisible(false);
+            itemTone.setVisible(false);
             return true;
         case Disconnected:
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemServerStart.setVisible(true);
             itemServerStop.setVisible(false);
+            itemTone.setVisible(false);
             return true;
         case Connected:
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
             itemServerStart.setVisible(false);
             itemServerStop.setVisible(false);
+            itemTone.setVisible(true);
             return true;
         case Waiting:
             itemConnect.setVisible(false);
@@ -242,6 +247,10 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
             return true;
+        case R.id.menu_tone:
+            onClickToneButton();
+            //soundPool.play(sound_connected, 1.0f, 1.0f, 0, 0, 1);
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -272,6 +281,12 @@ public class MainActivity extends AppCompatActivity {
             else
                 setState(State.Disconnected);
         }
+    }
+
+    public void onClickToneButton() {
+        long time = System.currentTimeMillis();
+        ChatMessage message = new ChatMessage(message_seq, time, SEND_TONE, devName);
+        commThread.send(message);
     }
 
     public void onClickSendButton(View v) {
@@ -645,7 +660,12 @@ public class MainActivity extends AppCompatActivity {
                 activity.setState(State.Disconnected);
                 break;
             case MESG_RECEIVED:
-                activity.showMessage((ChatMessage) msg.obj);
+                ChatMessage message = (ChatMessage) msg.obj;
+                if (message.content.equals(SEND_TONE)){
+                    soundPool.play(sound_connected, 1.0f, 1.0f, 0, 0, 1);
+                }else {
+                    activity.showMessage((ChatMessage) msg.obj);
+                }
                 break;
             }
         }

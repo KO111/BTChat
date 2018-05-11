@@ -25,5 +25,9 @@
         android:id="@+id/menu_about"
         android:orderInCategory="106"
         android:title="@string/menu_about_title"/>
+    <item
+        android:id="@+id/menu_tone"
+        android:orderInCategory="107"
+        android:title="@string/menu_tone_title" />
 
 </menu>
